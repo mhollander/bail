@@ -1,0 +1,65 @@
+---
+title: "FJD Fines and Costs Analysis (10-27-2017)"
+author: "Michael Hollander / CLS"
+date: "October 29, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.width=12, fig.height=8, fig.path='Figs/',
+                      echo=FALSE, warning=FALSE, message=FALSE)
+knitr::knit_hooks$set(inline = function(x) {
+  prettyNum(x, big.mark=",")
+})
+```
+
+```{r includes}
+source("processFinesCosts.R")
+```
+
+### Basic Statistics About the FJD Fines and Costs Data
+Category | Statistic
+---------|-----------
+Total Entries | `r totalEntries`
+Total Unique Names | `r totalUniqueNames`
+Total Amount Owed | `r paste("$",totalOwed)`
+Total Amount Delinquent | `r paste("$",totalDelinquent)`
+Median Monthly Payment | `r paste("$", median(fcdata$MonthlyPayment))`
+Median months in Arrears | `r median(fcdata$MonthlyPaymentsBehind[fcdata$MonthlyPayment > 0])`
+
+### Statistics Broken Down By Active vs Referred Cases
+Category | Statistic
+---------|-----------
+Total Active |  `r totalActive`
+Total Referred to Collections | `r totalReferred`
+Total Amount Owed Active Cases | `r paste("$",totalOwed-totalOwedReferred)`
+Total Amount Owed Referred Cases | `r paste("$",totalOwedReferred)`
+Total Amount Delinquent Active Cases | `r paste("$",totalDelinquent-totalDelinquentReferred)`
+Total Amount Delinquent Referred Cases | `r paste("$",totalDelinquentReferred)`
+Median Monthly Payment Plan Active | `r paste("$", summariseFcdata$MonthlyPayment[summariseFcdata$Status=="Active"])`
+Median Monthly Payment Plan Referred | `r paste("$", summariseFcdata$MonthlyPayment[summariseFcdata$Status=="Referred"])`
+Median Months in Arrears Active | `r summariseFcdata$MonthlyPaymentsBehind[summariseFcdata$Status=="Active"]`
+Median Months in Arrears Referred | `r summariseFcdata$MonthlyPaymentsBehind[summariseFcdata$Status=="Referred"]`
+
+### Some Plots
+```{r plot1}
+plotTotalOwed
+```
+
+***
+
+```{r plot2}
+plotDelinquentAmount
+```
+
+***
+
+```{r plot3}
+plotMonthlyPayment
+```
+
+***
+
+```{r plot4}
+plotMonthlyPaymentsBehind
+```
