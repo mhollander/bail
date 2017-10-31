@@ -2,7 +2,9 @@
 title: "FJD Fines and Costs Analysis (10-27-2017)"
 author: "Michael Hollander / CLS"
 date: "October 29, 2017"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -18,48 +20,39 @@ source("processFinesCosts.R")
 ```
 
 ### Basic Statistics About the FJD Fines and Costs Data
-Category | Statistic
----------|-----------
-Total Entries | `r totalEntries`
-Total Unique Names | `r totalUniqueNames`
-Total Amount Owed | `r paste("$",totalOwed)`
-Total Amount Delinquent | `r paste("$",totalDelinquent)`
-Median Monthly Payment | `r paste("$", median(fcdata$MonthlyPayment))`
-Median months in Arrears | `r median(fcdata$MonthlyPaymentsBehind[fcdata$MonthlyPayment > 0])`
+Category | All Cases | Active Cases | Referred Cases
+---------|-----------|-----------|-----------
+Total Entries | `r totalEntries` | `r totalActive` (`r 100*round(totalActive/totalEntries,2)`%)| `r totalReferred`  (`r 100*round(totalReferred/totalEntries,2)`%)
+Total Unique Names | `r totalUniqueNames` 
+Cases with No Valid Address | `r totalNoAddress` | `r totalNoAddressActive` (`r 100*round(totalNoAddressActive/totalNoAddress,2)`%)| `r totalNoAddressReferred` (`r 100*round(totalNoAddressReferred/totalNoAddress,2)`%)
+Total Amount Owed | `r paste("$",totalOwed)` | `r paste("$",totalOwed-totalOwedReferred)` (`r 100*(1-round(totalOwedReferred/totalOwed,2))`%) |`r paste("$",totalOwedReferred)` (`r 100*round(totalOwedReferred/totalOwed,2)`%)
+Total Amount Delinquent | $`r totalDelinquent`| $`r totalDelinquent-totalDelinquentReferred` (`r 100*round(1-totalDelinquentReferred/totalDelinquent,2)`%)| $`r totalDelinquentReferred` (`r 100*round(totalDelinquentReferred/totalDelinquent,2)`%)
+Median Monthly Payment | `r paste("$", median(fcdata$MonthlyPayment))` | `r paste("$", summariseFcdata$MonthlyPayment[summariseFcdata$Status=="Active"])` | `r paste("$", summariseFcdata$MonthlyPayment[summariseFcdata$Status=="Referred"])`
+Median months in Arrears | `r median(fcdata$MonthlyPaymentsBehind[fcdata$MonthlyPayment > 0])` | `r summariseFcdata$MonthlyPaymentsBehind[summariseFcdata$Status=="Active"]` | `r summariseFcdata$MonthlyPaymentsBehind[summariseFcdata$Status=="Referred"]`
 
-### Statistics Broken Down By Active vs Referred Cases
-Category | Statistic
----------|-----------
-Total Active |  `r totalActive`
-Total Referred to Collections | `r totalReferred`
-Total Amount Owed Active Cases | `r paste("$",totalOwed-totalOwedReferred)`
-Total Amount Owed Referred Cases | `r paste("$",totalOwedReferred)`
-Total Amount Delinquent Active Cases | `r paste("$",totalDelinquent-totalDelinquentReferred)`
-Total Amount Delinquent Referred Cases | `r paste("$",totalDelinquentReferred)`
-Median Monthly Payment Plan Active | `r paste("$", summariseFcdata$MonthlyPayment[summariseFcdata$Status=="Active"])`
-Median Monthly Payment Plan Referred | `r paste("$", summariseFcdata$MonthlyPayment[summariseFcdata$Status=="Referred"])`
-Median Months in Arrears Active | `r summariseFcdata$MonthlyPaymentsBehind[summariseFcdata$Status=="Active"]`
-Median Months in Arrears Referred | `r summariseFcdata$MonthlyPaymentsBehind[summariseFcdata$Status=="Referred"]`
 
 ### Some Plots
+This first plot just shows the overall distribution of total amount owed (not in arrears) by individuals with payment plans, categorized by whether the case has been referred to a collection agency or not.  What we can see is that active cases tend to be for smaller amounts of money than referred cases, although it also shows that some cases have been referred despite no money being owed. What I don't know and what would be interesting to find out is: if a case is referred to a collection agency, is the entire amount referred or just the portion in arrears?  If the former is true, it makes sense that higher total value cases would end up in collections as they are more attractive to the collections agency, which gets an additional 25% on top of what is paid to it for the court.    
 ```{r plot1}
 plotTotalOwed
 ```
 
 ***
 
+This plot shows the distribution of the amount delinquent for individuals with payment plans, categorized by whether the case has been referred to a collection agency or not.  Like the first graph, the cases that have been referred owed more than the active cases.  FWIW, there is a larger gap between the median in arrears for each category ($ `r summariseFcdata$DelinquentAmount[summariseFcdata$Status=="Referred"] - summariseFcdata$DelinquentAmount[summariseFcdata$Status=="Active"]` ) vs the median owed ($ `r summariseFcdata$TotalOwed[summariseFcdata$Status=="Referred"] - summariseFcdata$TotalOwed[summariseFcdata$Status=="Active"]`).
 ```{r plot2}
 plotDelinquentAmount
 ```
 
 ***
 
+This plot shows the monthly payment owed by people in each category.  Interestingly enough, collection agency cases have a lower payment plant ($`r summariseFcdata$MonthlyPayment[summariseFcdata$Status=="Referred"]` vs $`r summariseFcdata$MonthlyPayment[summariseFcdata$Status=="Active"]`), which suggests that people who have been sent to a collection agency have also previously demonstrated a lower ability to pay.  Worth noting is that these graphs are fairly useless - there are **HUGE** spikes that I am not showing at $25 and $35, since almost everyone is in a plan of this amount.
 ```{r plot3}
 plotMonthlyPayment
 ```
 
 ***
-
+Finally we can see the real difference between people who have been referred to collections and those who have not: those who have been referred to collections are MANY more months behind in their payments (`r summariseFcdata$MonthlyPaymentsBehind[summariseFcdata$Status=="Referred"]` vs `r summariseFcdata$MonthlyPaymentsBehind[summariseFcdata$Status=="Active"]`), regardless of total owed.
 ```{r plot4}
 plotMonthlyPaymentsBehind
 ```
