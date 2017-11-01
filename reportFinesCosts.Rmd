@@ -3,8 +3,8 @@ title: "FJD Fines and Costs Analysis (10-27-2017)"
 author: "Michael Hollander / CLS"
 date: "October 29, 2017"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -28,7 +28,7 @@ Cases with No Valid Address | `r totalNoAddress` | `r totalNoAddressActive` (`r 
 Total Amount Owed | `r paste("$",totalOwed)` | `r paste("$",totalOwed-totalOwedReferred)` (`r 100*(1-round(totalOwedReferred/totalOwed,2))`%) |`r paste("$",totalOwedReferred)` (`r 100*round(totalOwedReferred/totalOwed,2)`%)
 Total Amount Delinquent | $`r totalDelinquent`| $`r totalDelinquent-totalDelinquentReferred` (`r 100*round(1-totalDelinquentReferred/totalDelinquent,2)`%)| $`r totalDelinquentReferred` (`r 100*round(totalDelinquentReferred/totalDelinquent,2)`%)
 Median Monthly Payment | `r paste("$", median(fcdata$MonthlyPayment))` | `r paste("$", summariseFcdata$MonthlyPayment[summariseFcdata$Status=="Active"])` | `r paste("$", summariseFcdata$MonthlyPayment[summariseFcdata$Status=="Referred"])`
-Median months in Arrears | `r median(fcdata$MonthlyPaymentsBehind[fcdata$MonthlyPayment > 0])` | `r summariseFcdata$MonthlyPaymentsBehind[summariseFcdata$Status=="Active"]` | `r summariseFcdata$MonthlyPaymentsBehind[summariseFcdata$Status=="Referred"]`
+Median months in Arrears | `r median(fcdata$MonthlyPaymentsBehindRounded[fcdata$MonthlyPayment > 0])` | `r summariseFcdata$MonthlyPaymentsBehindRounded[summariseFcdata$Status=="Active"]` | `r summariseFcdata$MonthlyPaymentsBehindRounded[summariseFcdata$Status=="Referred"]`
 
 
 ### Some Plots
@@ -55,4 +55,16 @@ plotMonthlyPayment
 Finally we can see the real difference between people who have been referred to collections and those who have not: those who have been referred to collections are MANY more months behind in their payments (`r summariseFcdata$MonthlyPaymentsBehind[summariseFcdata$Status=="Referred"]` vs `r summariseFcdata$MonthlyPaymentsBehind[summariseFcdata$Status=="Active"]`), regardless of total owed.
 ```{r plot4}
 plotMonthlyPaymentsBehind
+```
+
+*** 
+We can see that for any given number of months in arrears, there is no difference in the delinquent amount owed to the court, however.  The median amount owed at any given number of months behind is virtually identical for active and referred cases (at least up to about 134 months behind where things go wacky).  The median amount behind, in case you are wondering, is $25 * number of months.
+```{r plot5}
+plotDelinquentPerPaymentsBehind
+```
+
+***
+The same effect seems to be true when we plot median amount owed (not in arrears, just owed overall) vs the number of months in arrears.  The scale of this plot is slightly different, but if you look at the numbers, the median amount owed at any given level is virtually identical to the median amount in arrears.  In other words, most people owe the entire amount of their payment plan.  
+```{r plot6}
+plotOwedPerPaymentsBehind
 ```

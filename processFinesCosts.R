@@ -23,6 +23,7 @@ names(fcdata) <- c("First", "Last", "Address", "PaymentPlanNumber","Status", "De
 #calculate some columns for later use
 fcdata$MonthlyPaymentsBehind <- round(fcdata$DelinquentAmount / fcdata$MonthlyPayment, 3)
 fcdata$DelinquentAmountPercentofTotalOwed <- round(fcdata$DelinquentAmount / fcdata$TotalOwed * 100,0)
+fcdata$MonthlyPaymentsBehindRounded <- round(fcdata$MonthlyPaymentsBehind,0)
 
 dfStatus <- group_by(fcdata, Status)
 summariseFcdata <- summarise_if(dfStatus[dfStatus$MonthlyPayment > 0,], is.numeric, median)
@@ -75,7 +76,7 @@ statsDelinquentPercentActive <- fivenum(fcdata$DelinquentAmountPercentofTotalOwe
 subfcdata <- fcdata[fcdata$MonthlyPayment > 0 & fcdata$MonthlyPaymentsBehind < 200,]
 plotMonthlyPaymentsBehind <- ggplot(subfcdata, aes(MonthlyPaymentsBehind, fill=Status)) + 
   geom_density(alpha=.5, position="identity") +
-  geom_vline(data=summariseFcdata, aes(xintercept=MonthlyPaymentsBehind, colour=Status),
+  geom_vline(data=summariseFcdata, aes(xintercept=MonthlyPaymentsBehindRounded, colour=Status),
              linetype="dashed", size=2)+
   scale_x_continuous(breaks = sort(c(round(seq(0, 
                                          max(subfcdata$MonthlyPaymentsBehind), length.out=5),0),
@@ -147,3 +148,24 @@ plotMonthlyPayment <- ggplot(subfcdata, aes(MonthlyPayment,fill=Status)) +
        caption="Graph does not include people who have a payment plant over $600/month as that makes the important part of the graph unreadable.\nThe graph is cut off to exclude much of the data at the median of $25 and $35 since those are the vast, vast majority of payment plans.\nData downloaded from http://courts.phila.gov/collections/index.asp on 10/27/2017") +
   plotTheme 
 #plotMonthlyPayment  
+
+
+subfcdata <- fcdata[fcdata$MonthlyPayment > 0 & fcdata$MonthlyPaymentsBehind < 200 & fcdata$MonthlyPaymentsBehind > 1,]
+plotDelinquentPerPaymentsBehind <- ggplot(subfcdata, aes(x=MonthlyPaymentsBehindRounded, y=DelinquentAmount, fill=Status)) + 
+  geom_bar(stat="summary", fun.y="median") +
+  scale_y_continuous(labels=dollar) +
+  ggtitle("Median Amount in Arrears Per Number of Months in Arrears\nBy Payment Plan Status") +
+  labs(x="Monthly Payments Behind", y=NULL,
+       caption="Graph does not include people behind by more than 200 payments (there are very few) or less than 2 (there are too many).\n\nData downloaded from http://courts.phila.gov/collections/index.asp on 10/27/2017") +
+  plotTheme
+#plotDelinquentPerPaymentsBehind  
+
+subfcdata <- fcdata[fcdata$MonthlyPayment > 0 & fcdata$MonthlyPaymentsBehind < 200 & fcdata$MonthlyPaymentsBehind > 1,]
+plotOwedPerPaymentsBehind <- ggplot(subfcdata, aes(x=MonthlyPaymentsBehindRounded, y=TotalOwed, fill=Status)) + 
+  geom_bar(stat="summary", fun.y="median") +
+  scale_y_continuous(labels=dollar) +
+  ggtitle("Median Amount Owed Per Number of Months in Arrears\nBy Payment Plan Status") +
+  labs(x="Monthly Payments Behind", y=NULL,
+       caption="Graph does not include people behind by more than 200 payments (there are very few) or less than 2 (there are too many).\n\nData downloaded from http://courts.phila.gov/collections/index.asp on 10/27/2017") +
+  plotTheme
+#plotOwedPerPaymentsBehind  
