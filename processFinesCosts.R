@@ -27,6 +27,7 @@ fcdata$MonthlyPaymentsBehindRounded <- round(fcdata$MonthlyPaymentsBehind,0)
 
 dfStatus <- group_by(fcdata, Status)
 summariseFcdata <- summarise_if(dfStatus[dfStatus$MonthlyPayment > 0,], is.numeric, median)
+summariseFcdataNoAddress <- summarise_if(dfStatus[dfStatus$MonthlyPayment > 0 & dfStatus$Address=="No valid address on record",], is.numeric, median)
 
 # start getting stats
 
@@ -44,6 +45,12 @@ totalDelinquentReferred <- sum(fcdata$DelinquentAmount[fcdata$Status=="Referred"
 totalNoAddress <- NROW(fcdata[fcdata$Address=="No valid address on record",])
 totalNoAddressActive <- NROW(fcdata[fcdata$Address=="No valid address on record" & fcdata$Status=="Active",])
 totalNoAddressReferred <- NROW(fcdata[fcdata$Address=="No valid address on record" & fcdata$Status=="Referred",])
+totalOwedNoAddress <- sum(fcdata$TotalOwed[fcdata$Address=="No valid address on record"])
+totalOwedNoAddressActive <- sum(fcdata$TotalOwed[fcdata$Address=="No valid address on record" & fcdata$Status=="Active"])
+totalOwedNoAddressReferred <- sum(fcdata$TotalOwed[fcdata$Address=="No valid address on record" & fcdata$Status=="Referred"])
+totalDelinquentNoAddress <- sum(fcdata$DelinquentAmount[fcdata$Address=="No valid address on record"])
+totalDelinquentNoAddressActive <- sum(fcdata$DelinquentAmount[fcdata$Address=="No valid address on record" & fcdata$Status=="Active"])
+totalDelinquentNoAddressReferred <- sum(fcdata$DelinquentAmount[fcdata$Address=="No valid address on record" & fcdata$Status=="Referred"])
 proportionNoAddressReferred <- round(totalNoAddressReferred / totalReferred, 3)
 proportionNoAddressActive <- round(totalNoAddressActive / totalActive, 3)
 proportionNoAddress <-  round(totalNoAddress / totalEntries, 3)
